@@ -65,13 +65,13 @@ void readDMP(const string& filename)
     file.open(filename);
     getline(file, in_line); //version
     getline(file, in_line); //design case01
-    getline(file, in_line); //unitdistance
+    getline(file, in_line); //unit distance
     while (getline(file, in_line))
     {
         if (in_line.find("COMPONENTS") != string::npos)
         {
             MACRO macro;
-            vector<string> content_array = splitByPattern(in_line, " ");
+            content_array = splitByPattern(in_line, " ");
             int compNum;
             ss1 << content_array[1];
             ss1 >> compNum;
@@ -85,8 +85,6 @@ void readDMP(const string& filename)
                 getline(file, in_line);
                 content_array = splitByPattern(in_line, " ");
                 //macro.placeType = content_array[1];
-                stringstream ss1;
-                stringstream ss2;
                 ss1 << content_array[3];
                 ss1 >> macro.position.posX;
                 ss2 << content_array[4];
