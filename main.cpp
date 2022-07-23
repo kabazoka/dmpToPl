@@ -1,9 +1,9 @@
 #include <iostream>
-#include <unordered_map>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <map>
 
 using namespace std;
 
@@ -19,13 +19,14 @@ struct MACRO
     string macroName;
     POINT position;
     string orientation;
+    string fixed;
 };
 
 vector<string> splitByPattern(string content, const string& pattern);
 string &trim(string &str);
 
 int dbu = 2000;
-unordered_map<string, MACRO> macroMap;
+std::multimap<string, MACRO> macroMap;
 
 void readPL(const string& filename)
 {
@@ -49,18 +50,78 @@ void readPL(const string& filename)
         ss2 << content_array[2];
         ss2 >> macro.position.posY;
         macro.orientation = content_array[4];
+        if(content_array.size() >= 6)
+            macro.fixed = content_array[5];
         macroMap.insert(pair<string, MACRO>(macro.macroName, macro));
     }
 }
 
 void readDMP(const string& filename)
 {
+    ifstream file;
+    string in_line;
+    vector<string> content_array;
+    stringstream ss1, ss2;
+    file.open(filename);
+    getline(file, in_line); //version
+    getline(file, in_line); //design case01
+    getline(file, in_line); //unitdistance
+    while (getline(file, in_line))
+    {
+        if (in_line.find("COMPONENTS") != string::npos)
+        {
+            MACRO macro;
+            vector<string> content_array = splitByPattern(in_line, " ");
+            int compNum;
+            ss1 << content_array[1];
+            ss1 >> compNum;
+            for (int i = 0; i < compNum; i++)
+            {
+                getline(file, in_line);
+                content_array = splitByPattern(in_line, " ");
+                string compName = content_array[1];
+                macro.macroName = compName;
+                macro.macroType = content_array[2];
+                getline(file, in_line);
+                content_array = splitByPattern(in_line, " ");
+                //macro.placeType = content_array[1];
+                stringstream ss1;
+                stringstream ss2;
+                ss1 << content_array[3];
+                ss1 >> macro.position.posX;
+                ss2 << content_array[4];
+                ss2 >> macro.position.posY;
+                macro.orientation = content_array[6];
+                macroMap.insert(pair<string, MACRO>(compName, macro));
+            }
+        }
+        
+    }
 
 }
 
 void outputPL(const string& filename)
 {
-
+    ofstream ofs;
+    ofs.open(filename);
+    if (!ofs.is_open())
+    {
+        cout << "Failed to open file.\n";
+    }
+    else
+    {
+        ofs << "UCLA pl 1.0\n";
+        ofs << "# Unit MICRONS: " << dbu << "\n\n" ;
+        for (const auto& macro : macroMap)
+        {
+            ofs << macro.second.macroName << (int)macro.second.position.posX 
+            << " " << (int)macro.second.position.posY << " : " 
+            << macro.second.orientation << macro.second.fixed << endl;
+        }
+        ofs << "\n\n\n";
+        
+        ofs.close();
+    }
 }
 
 int main(int argc, char* argv[])
@@ -72,7 +133,7 @@ int main(int argc, char* argv[])
 
     readPL(all_args[1]);
     readDMP(all_args[2]);
-    outputPL(all_args[1]);
+    outputPL(all_args[3]);
 
     return 0;
 }
