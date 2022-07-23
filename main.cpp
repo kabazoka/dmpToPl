@@ -17,7 +17,7 @@ struct MACRO
 {
     string macroType;
     string macroName;
-    POINT position;
+    POINT position{};
     string orientation;
     string fixed;
 };
@@ -48,6 +48,8 @@ void readPL(const string& filename)
     getline(file, in_line);//blank line
     while(getline(file, in_line))
     {
+        if (in_line.empty())
+            break;
         content_array = splitByPattern(in_line, " ");
         macro.macroName = content_array[0];
         ss1 << content_array[1];
@@ -55,8 +57,11 @@ void readPL(const string& filename)
         ss2 << content_array[2];
         ss2 >> macro.position.posY;
         macro.orientation = content_array[4];
-        if(content_array.size() >= 6)
+        if(content_array.size() > 5)
+        {
+            //cout << "reading " << macro.macroName << endl;
             macro.fixed = content_array[5];
+        }
         macroMap.insert(pair<string, MACRO>(macro.macroName, macro));
     }
 }
@@ -69,42 +74,41 @@ void readDMP(const string& filename)
     stringstream ss1, ss2;
     file.open(filename);
     if (file.is_open())
-        cout << "Reading .dmp file..." << endl;
-    else
-        cout << "Cannot open .dmp file" << endl;
-    getline(file, in_line); //version
-    getline(file, in_line); //design case01
-    getline(file, in_line); //unit distance
-    while (getline(file, in_line))
     {
-        if (in_line.find("COMPONENTS") != string::npos)
+        cout << "Reading .dmp file..." << endl;
+        while (getline(file, in_line))
         {
-            MACRO macro;
-            content_array = splitByPattern(in_line, " ");
-            int compNum;
-            ss1 << content_array[1];
-            ss1 >> compNum;
-            for (int i = 0; i < compNum; i++)
+            if (in_line.find("COMPONENTS") != string::npos)
             {
-                getline(file, in_line);
+                MACRO macro;
                 content_array = splitByPattern(in_line, " ");
-                string compName = content_array[1];
-                macro.macroName = compName;
-                macro.macroType = content_array[2];
-                getline(file, in_line);
-                content_array = splitByPattern(in_line, " ");
-                //macro.placeType = content_array[1];
-                ss1 << content_array[3];
-                ss1 >> macro.position.posX;
-                ss2 << content_array[4];
-                ss2 >> macro.position.posY;
-                macro.orientation = content_array[6];
-                macroMap.insert(pair<string, MACRO>(compName, macro));
+                int compNum = 0;
+                ss1 << content_array[1];
+                ss1 >> compNum;
+                for (int i = 0; i < compNum; i++)
+                {
+                    getline(file, in_line);
+                    content_array = splitByPattern(in_line, " ");
+                    string compName = content_array[1];
+                    macro.macroName = compName;
+                    macro.macroType = content_array[2];
+                    getline(file, in_line);
+                    content_array = splitByPattern(in_line, " ");
+                    //macro.placeType = content_array[1];
+                    ss1 << content_array[3];
+                    ss1 >> macro.position.posX;
+                    ss2 << content_array[4];
+                    ss2 >> macro.position.posY;
+                    macro.orientation = content_array[6];
+                    macroMap.insert(pair<string, MACRO>(compName, macro));
+                }
             }
         }
-        
+        cout << ".dmp file reading completed." << endl;
+        file.close();
     }
-
+    else
+        cout << "Cannot open .dmp file" << endl;
 }
 
 void outputPL(const string& filename)
@@ -117,13 +121,14 @@ void outputPL(const string& filename)
     }
     else
     {
+        cout << "Outputting..." << endl;
         ofs << "UCLA pl 1.0\n";
         ofs << "# Unit MICRONS: " << dbu << "\n\n" ;
         for (const auto& macro : macroMap)
         {
             ofs << macro.second.macroName << (int)macro.second.position.posX 
             << " " << (int)macro.second.position.posY << " : " 
-            << macro.second.orientation << macro.second.fixed << endl;
+            << macro.second.orientation << " " << macro.second.fixed << endl;
         }
         ofs << "\n\n\n";
         
