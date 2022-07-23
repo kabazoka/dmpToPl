@@ -36,11 +36,16 @@ void readPL(const string& filename)
     stringstream ss1, ss2;
     MACRO macro;
     file.open(filename);
+    if (file.is_open())
+        cout << "Reading .pl file..." << endl;
+    else
+        cout << "Cannot open .pl file" << endl;
     getline(file, in_line);//ucla pl
     getline(file, in_line);//unit microns
     content_array = splitByPattern(in_line, " ");
     ss1 << content_array[3];
     ss1 >> dbu;
+    getline(file, in_line);//blank line
     while(getline(file, in_line))
     {
         content_array = splitByPattern(in_line, " ");
@@ -63,6 +68,10 @@ void readDMP(const string& filename)
     vector<string> content_array;
     stringstream ss1, ss2;
     file.open(filename);
+    if (file.is_open())
+        cout << "Reading .dmp file..." << endl;
+    else
+        cout << "Cannot open .dmp file" << endl;
     getline(file, in_line); //version
     getline(file, in_line); //design case01
     getline(file, in_line); //unit distance
@@ -104,7 +113,7 @@ void outputPL(const string& filename)
     ofs.open(filename);
     if (!ofs.is_open())
     {
-        cout << "Failed to open file.\n";
+        cout << "Cannot open output file.\n";
     }
     else
     {
@@ -124,7 +133,7 @@ void outputPL(const string& filename)
 
 int main(int argc, char* argv[])
 {
-
+    /*
     string current_exec_name = argv[0]; // Name of the current exec program
 
     vector<string> all_args(argv, argv + argc);
@@ -132,7 +141,11 @@ int main(int argc, char* argv[])
     readPL(all_args[1]);
     readDMP(all_args[2]);
     outputPL(all_args[3]);
+    */
 
+    readPL("case01.pl");
+    readDMP("case01.dmp");
+    outputPL("case01test.pl");
     return 0;
 }
 
