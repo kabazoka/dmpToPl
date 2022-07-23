@@ -33,7 +33,7 @@ void readPL(const string& filename)
     ifstream file;
     string in_line;
     vector<string> content_array;
-    stringstream ss1, ss2;
+    stringstream ss;
     MACRO macro;
     file.open(filename);
     if (file.is_open())
@@ -43,11 +43,12 @@ void readPL(const string& filename)
     getline(file, in_line);//ucla pl
     getline(file, in_line);//unit microns
     content_array = splitByPattern(in_line, " ");
-    ss1 << content_array[3];
-    ss1 >> dbu;
+    ss << content_array[3];
+    ss >> dbu;
     getline(file, in_line);//blank line
     while(getline(file, in_line))
     {
+        stringstream ss1, ss2;
         if (in_line.empty())
             break;
         content_array = splitByPattern(in_line, " ");
@@ -62,6 +63,8 @@ void readPL(const string& filename)
             //cout << "reading " << macro.macroName << endl;
             macro.fixed = content_array[5];
         }
+        else
+            macro.fixed = " ";
         macroMap.insert(pair<string, MACRO>(macro.macroName, macro));
     }
 }
@@ -100,6 +103,7 @@ void readDMP(const string& filename)
                     ss2 << content_array[4];
                     ss2 >> macro.position.posY;
                     macro.orientation = content_array[6];
+                    macroMap.erase(macro.macroName);
                     macroMap.insert(pair<string, MACRO>(compName, macro));
                 }
             }
@@ -126,7 +130,7 @@ void outputPL(const string& filename)
         ofs << "# Unit MICRONS: " << dbu << "\n\n" ;
         for (const auto& macro : macroMap)
         {
-            ofs << macro.second.macroName << (int)macro.second.position.posX 
+            ofs << macro.second.macroName << " " << (int)macro.second.position.posX 
             << " " << (int)macro.second.position.posY << " : " 
             << macro.second.orientation << " " << macro.second.fixed << endl;
         }
@@ -138,7 +142,6 @@ void outputPL(const string& filename)
 
 int main(int argc, char* argv[])
 {
-    /*
     string current_exec_name = argv[0]; // Name of the current exec program
 
     vector<string> all_args(argv, argv + argc);
@@ -146,11 +149,12 @@ int main(int argc, char* argv[])
     readPL(all_args[1]);
     readDMP(all_args[2]);
     outputPL(all_args[3]);
-    */
-
+    
+    /*
     readPL("case01.pl");
     readDMP("case01.dmp");
     outputPL("case01test.pl");
+    */
     return 0;
 }
 
