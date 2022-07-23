@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/kabazoka/文件/GitHub/dmpToPl'
+make: Leaving directory '/home/kabazoka/文件/GitHub/dmpToPl'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+

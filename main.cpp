@@ -74,7 +74,7 @@ void readDMP(const string& filename)
     ifstream file;
     string in_line;
     vector<string> content_array;
-    stringstream ss1, ss2;
+    stringstream ss;
     file.open(filename);
     if (file.is_open())
     {
@@ -86,10 +86,11 @@ void readDMP(const string& filename)
                 MACRO macro;
                 content_array = splitByPattern(in_line, " ");
                 int compNum = 0;
-                ss1 << content_array[1];
-                ss1 >> compNum;
+                ss << content_array[1];
+                ss >> compNum;
                 for (int i = 0; i < compNum; i++)
                 {
+                    stringstream ss1, ss2;
                     getline(file, in_line);
                     content_array = splitByPattern(in_line, " ");
                     string compName = content_array[1];
